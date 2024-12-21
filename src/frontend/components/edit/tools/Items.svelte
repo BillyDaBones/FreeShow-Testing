@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { Item, ItemType } from "../../../../types/Show"
-    import { activeEdit, activePopup, dictionary, selected, showsCache, timers, variables } from "../../../stores"
+    import { activeEdit, activePopup, dictionary, labelsDisabled, selected, showsCache, timers, variables } from "../../../stores"
     import { clone } from "../../helpers/array"
     import Icon from "../../helpers/Icon.svelte"
     import { getFileName } from "../../helpers/media"
@@ -26,10 +26,8 @@
     ]
 
     const specialItems: ItemRef[] = [
-        { id: "list" },
         // { id: "table" },
         { id: "camera" },
-        { id: "variable" },
         { id: "slide_tracker", icon: "percentage" },
         { id: "events", icon: "calendar" },
         { id: "mirror" },
@@ -80,7 +78,7 @@
     <div class="grid">
         {#each items as item, i}
             <IconButton
-                style={i === 0 ? "min-width: 100%;" : "justify-content: start;padding-left: 15px;"}
+                style={i === 0 ? "min-width: 100%;" : $labelsDisabled ? "" : "justify-content: start;padding-left: 15px;"}
                 name
                 title={$dictionary.items?.[item.name || item.id]}
                 icon={item.icon || item.id}
@@ -99,7 +97,7 @@
     <div class="grid special">
         {#each specialItems as item}
             <IconButton
-                style="justify-content: start;padding-left: 15px;"
+                style={$labelsDisabled ? "" : "justify-content: start;padding-left: 15px;"}
                 name
                 title={$dictionary.items?.[item.name || item.id]}
                 icon={item.icon || item.id}
@@ -124,8 +122,8 @@
             dark
             center
         >
-            <Icon id="star" right />
-            <T id="items.icon" />
+            <Icon id="star" right={!$labelsDisabled} />
+            {#if !$labelsDisabled}<T id="items.icon" />{/if}
         </Button>
     </div>
 

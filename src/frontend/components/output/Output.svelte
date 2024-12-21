@@ -216,6 +216,8 @@
         }
     }
 
+    $: cropping = currentOutput.cropping || currentStyle.cropping
+
     // values
     $: isKeyOutput = currentOutput.isKeyOutput
     $: backgroundColor = isKeyOutput ? "black" : currentOutput.transparent ? "transparent" : currentSlide?.settings?.color || currentStyle.background || "black"
@@ -236,7 +238,7 @@
     }, 1000)
 </script>
 
-<Zoomed id={outputId} background={backgroundColor} backgroundDuration={transitions.media?.type === "none" ? 0 : (transitions.media?.duration ?? 800)} center {style} {resolution} {mirror} {drawZoom} cropping={currentStyle.cropping} bind:ratio>
+<Zoomed id={outputId} background={backgroundColor} backgroundDuration={transitions.media?.type === "none" ? 0 : (transitions.media?.duration ?? 800)} center {style} {resolution} {mirror} {drawZoom} {cropping} bind:ratio>
     <!-- always show style background (behind other backgrounds) -->
     {#if styleBackground && slide?.type !== "pdf"}
         <Background data={styleBackgroundData} {outputId} transition={transitions.media} {currentStyle} {slideFilter} {ratio} {isKeyOutput} animationStyle={animationData.style?.background || ""} mirror styleBackground />
@@ -249,7 +251,7 @@
 
     <!-- colorbars for testing -->
     {#if $colorbars}
-        <Image path="./assets/{$colorbars}" mediaStyle={{ rendering: "pixelated" }} />
+        <Image path="./assets/{$colorbars}" mediaStyle={{ rendering: "pixelated", fit: "fill" }} />
     {/if}
 
     <!-- "underlays" -->
@@ -296,7 +298,7 @@
     {/if}
 
     <!-- draw -->
-    {#if currentOutput.active || mirror}
+    {#if currentOutput.active || (mirror && !preview)}
         <Draw />
     {/if}
 </Zoomed>

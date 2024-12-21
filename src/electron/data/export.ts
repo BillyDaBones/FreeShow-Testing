@@ -11,6 +11,7 @@ import { createFolder, dataFolderNames, doesPathExist, getDataFolder, getShowsFr
 import { exportOptions } from "../utils/windowOptions"
 import { Message } from "../../types/Socket"
 import { getAllShows } from "../utils/shows"
+import AdmZip from "adm-zip"
 
 // SHOW: .show, PROJECT: .project, BIBLE: .fsb
 const customJSONExtensions: any = {
@@ -242,19 +243,46 @@ function exportAllShows(data: any) {
 // ----- PROJECT -----
 
 export function exportProject(data: any) {
-    writeFile(join(data.path, data.name), ".project", JSON.stringify(data.file), "utf-8", (err: any) => doneWritingFile(err, data.path))
+    toApp(MAIN, { channel: "ALERT", data: "export.exporting" })
+
+    const files = data.file.files || []
+    if (!files.length) {
+        // export as plain JSON
+        writeFile(join(data.path, data.name), ".project", JSON.stringify(data.file), "utf-8", (err: any) => doneWritingFile(err, data.path))
+        return
+    }
+
+    // create archive
+    const zip = new AdmZip()
+
+    // copy files
+    files.forEach((path: string) => {
+        zip.addLocalFile(path)
+    })
+
+    // add project file
+    zip.addFile("data.json", Buffer.from(JSON.stringify(data.file)))
+
+    const outputPath = join(data.path, data.name)
+    let p = getUniquePath(outputPath, ".project")
+    zip.writeZip(p, (err: any) => doneWritingFile(err, data.path))
 }
 
 // ----- HELPERS -----
 
 function writeFile(path: string, extension: string, data: any, options: any = undefined, callback: any) {
+    let p = getUniquePath(path, extension)
+    fs.writeFile(p, data, options, callback)
+}
+
+function getUniquePath(path: string, extension: string) {
     let number = -1
-    let tempPath: string = path
+    let p: string = path
 
     do {
         number++
-        tempPath = path + (number ? "_" + number : "") + extension
-    } while (doesPathExist(tempPath))
+        p = path + (number ? "_" + number : "") + extension
+    } while (doesPathExist(p))
 
-    fs.writeFile(tempPath, data, options, callback)
+    return p
 }

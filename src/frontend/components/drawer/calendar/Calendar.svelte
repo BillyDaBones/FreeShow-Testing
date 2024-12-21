@@ -222,7 +222,7 @@
                         class="day"
                         class:today={isSameDay(day, today)}
                         class:faded={day.getMonth() !== month || day.getFullYear() !== year}
-                        class:active={$activeDays.includes(copyDate(day).getTime())}
+                        class:active={$activeDays?.includes(copyDate(day).getTime())}
                         on:mousedown={(e) => dayClick(e, day)}
                         on:mousemove={(e) => move(e, day)}
                     >
@@ -378,7 +378,7 @@
     }
 
     .seperator {
-        width: 2px;
+        width: 1px;
         height: 100%;
         background-color: var(--primary);
     }

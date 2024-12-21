@@ -1,14 +1,15 @@
 // homepage: https://www.chordpro.org/chordpro/
 // docs: https://github.com/martijnversluis/ChordSheetJS
 
+import { get } from "svelte/store"
 import { uid } from "uid"
-import type { Show, Slide } from "../../types/Show"
+import type { Slide } from "../../types/Show"
 import { ShowObj } from "../classes/Show"
 import { clone } from "../components/helpers/array"
+import { setQuickAccessMetadata } from "../components/helpers/setShow"
 import { checkName, getGlobalGroup } from "../components/helpers/show"
 import { activePopup, alertMessage, dictionary, drawerTabsData, groups } from "../stores"
 import { setTempShows } from "./importHelpers"
-import { get } from "svelte/store"
 
 const metaKeys = ["number", "title", "artist", "composer", "lyricist", "copyright", "year", "notes", "ccli"]
 const chorus = ["start_of_chorus", "soc"]
@@ -36,14 +37,22 @@ export function convertChordPro(data: any) {
             let newSection: boolean = false
             content.split("\n").forEach(checkLine)
             function checkLine(line: string) {
-                if (newSection) {
+                if (line.includes("end_of_")) {
+                    newSection = true
+                    return
+                }
+
+                let sectionStart = line.includes("start_of_")
+                if (newSection || sectionStart) {
                     newSection = false
 
                     let trimmed = line.trim()
-                    if (trimmed[trimmed.length - 1] === ":") {
+                    if (trimmed[trimmed.length - 1] === ":" || sectionStart) {
                         // WIP "Bridge (x2):"
                         let group = trimmed.slice(0, -1).replace(/\d+/g, "").trim()
                         group = group.replace("(x)", "").trim()
+                        if (sectionStart) group = trimmed.slice(trimmed.lastIndexOf("_") + 1, trimmed.indexOf("}"))
+
                         let globalGroup = getGlobalGroup(group)
 
                         if (globalGroup) slides[slides.length - 1].globalGroup = globalGroup
@@ -161,7 +170,7 @@ function createShow({ slides, metadata, name, notes }) {
     let layoutID: string = uid()
     let category = get(drawerTabsData).shows?.activeSubTab
     if (category === "all" || category === "unlabeled") category = null
-    let show: Show = new ShowObj(false, category, layoutID)
+    let show = new ShowObj(false, category, layoutID)
 
     // remove empty slides
     slides = slides.filter((a) => a.items.length)
@@ -177,6 +186,7 @@ function createShow({ slides, metadata, name, notes }) {
     show.layouts[layoutID].slides = layouts
     if (notes.trim()) show.layouts[layoutID].notes = notes
     show.meta = metadata
+    if (show.meta.CCLI) show = setQuickAccessMetadata(show, "CCLI", show.meta.CCLI)
 
     // history({ id: "UPDATE", newData: { data: show, remember: { project: get(activeProject) } }, location: { page: "show", id: "show" } })
     return show

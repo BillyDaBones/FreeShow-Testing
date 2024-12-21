@@ -1,5 +1,6 @@
 <script lang="ts">
     import {
+        activeEdit,
         activeProject,
         activeRecording,
         activeShow,
@@ -16,6 +17,7 @@
         scriptures,
         selected,
         shows,
+        showsCache,
         slidesOptions,
         stageShows,
         templateCategories,
@@ -45,7 +47,6 @@
         view_simple: () => ($slidesOptions.mode === "simple" ? (enabled = true) : ""),
         view_list: () => ($slidesOptions.mode === "list" ? (enabled = true) : ""),
         view_lyrics: () => ($slidesOptions.mode === "lyrics" ? (enabled = true) : ""),
-        view_text: () => ($slidesOptions.mode === "text" ? (enabled = true) : ""),
         rename: () => {
             hide = $shows[$selected.data[0]?.id]?.locked
         },
@@ -82,6 +83,26 @@
             }
 
             menu.label = enabled ? "actions.enable" : "actions.disable"
+        },
+        slide_transition: () => {
+            if ($selected.id === "slide" && $activeShow) {
+                let ref = _show().layouts("active").ref()[0]
+                enabled = ref[$selected.data[0].index]?.data?.transition || false
+            }
+        },
+        transition: () => {
+            if ($activeShow && $showsCache[$activeShow.id] && $activeEdit.items.length) {
+                let ref = _show().layouts("active").ref()[0]
+                let slideId = ref[$activeEdit.slide || 0]?.id
+                let item = $showsCache[$activeShow.id].slides?.[slideId]?.items?.[$activeEdit.items[0]] || {}
+                enabled = item.actions?.transition
+                console.log(item)
+                // console.log($activeShow, $activeEdit)
+
+                // $showsCache[$activeShow.id].slides?.[$activeEdit.]?.
+                // let ref = _show().layouts("active").ref()[0]
+                // enabled = ref[$selected.data[0].index]?.data?.transition || false
+            }
         },
         remove_group: () => {
             if ($selected.id !== "slide") return
@@ -196,7 +217,7 @@
         // don't hide context menu
         const keepOpen = ["uppercase", "lowercase", "capitalize", "trim"] // "dynamic_values" (caret position is lost)
         if (keepOpen.includes(id)) return
-        const keepOpenToggle = ["enabled_drawer_tabs", "tag_set", "tag_filter", "bind_slide", "bind_item"]
+        const keepOpenToggle = ["enabled_drawer_tabs", "tag_set", "tag_filter", "media_tag_set", "media_tag_filter", "bind_slide", "bind_item"]
         if (keepOpenToggle.includes(id)) {
             enabled = !enabled
             return
@@ -233,14 +254,14 @@
                     <T id={menu?.label || id} />
                 {/key}
             {/if}
-            {#if menu.external}
+            {#if menu?.external}
                 <Icon id="launch" style="opacity: 0.8;" white />
             {/if}
         </p>
     </span>
 
     {#if shortcut}
-        <span style="opacity: 0.5;">{shortcut}</span>
+        <span style="opacity: 0.4;font-size: 0.8em;/*text-transform: uppercase;*/">{shortcut}</span>
     {/if}
 </div>
 

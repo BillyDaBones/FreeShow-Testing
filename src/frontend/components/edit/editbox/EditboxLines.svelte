@@ -315,6 +315,8 @@
 
             newLines.push(newLine)
 
+            // WIP backspace a line into a line with different styling will merge both and apply the first style to both (HTML issue)
+
             new Array(...line.childNodes).forEach((child: any, j: number) => {
                 if (child.nodeName === "#text") {
                     // add "floating" text to previous node (e.g. pressing backspace at the start of a line)
@@ -569,7 +571,11 @@
     <div bind:this={alignElem} class="align" class:plain style={plain ? null : item.align || null}>
         {#if item.lines?.length < 2 && !item.lines?.[0]?.text?.[0]?.value?.length}
             <span class="placeholder">
-                <T id="empty.text" />
+                {#if chordsMode}
+                    <T id="edit.chords" />
+                {:else}
+                    <T id="empty.text" />
+                {/if}
             </span>
         {/if}
         {#if isLocked}
@@ -609,6 +615,8 @@
         width: 100%;
         overflow: hidden;
         padding-top: 0;
+
+        line-height: 1.5em;
     }
 
     .edit:global(.invisible) {

@@ -4,7 +4,7 @@ import { send } from "../../utils/request"
 import { updateTransition } from "../../utils/transitions"
 import { startMetronome } from "../drawer/audio/metronome"
 import { audioPlaylistNext, clearAudio, startPlaylist, updateVolume } from "../helpers/audio"
-import { getThumbnail } from "../helpers/media"
+import { getSlideThumbnail, getThumbnail } from "../helpers/media"
 import { changeStageOutputLayout, displayOutputs, startCamera } from "../helpers/output"
 import { activateTriggerSync, changeOutputStyle, nextSlideIndividual, playSlideTimers, previousSlideIndividual, randomSlide, selectProjectShow, sendMidi, startAudioStream, startShowSync } from "../helpers/showActions"
 import { playSlideRecording } from "../helpers/slideRecording"
@@ -34,6 +34,7 @@ import {
     startScripture,
     toggleLock,
 } from "./apiHelper"
+import { oscToAPI } from "./apiOSC"
 import { sendRestCommandSync } from "./rest"
 
 /// STEPS TO CREATE A CUSTOM API ACTION ///
@@ -69,6 +70,7 @@ export type API_id_value = { id: string; value: string }
 export type API_rearrange = { showId: string; from: number; to: number }
 export type API_group = { showId: string; groupId: string }
 export type API_layout = { showId: string; layoutId: string }
+export type API_slide_thumbnail = { showId?: string; layoutId?: string; index?: number }
 export type API_media = { path: string }
 export type API_scripture = { id: string; reference: string }
 export type API_toggle = { id: string; value?: boolean }
@@ -180,7 +182,7 @@ export const API_ACTIONS = {
     // start specific folder (playlist)
     // folder_select_audio: () => ,
     change_volume: (data: API_volume) => updateVolume(data.volume ?? data.gain, data.gain !== undefined), // BC
-    start_audio_stream: (data: API_id) => startAudioStream(data.id),
+    start_audio_stream: (data: API_id) => startAudioStream(data),
     start_playlist: (data: API_id) => startPlaylist(data.id),
     playlist_next: () => audioPlaylistNext(),
     start_metronome: (data: API_metronome) => startMetronome(data),
@@ -218,12 +220,16 @@ export const API_ACTIONS = {
     get_groups: (data: API_id) => getShowGroups(data.id),
 
     get_thumbnail: (data: API_media) => getThumbnail(data),
+    get_slide_thumbnail: (data: API_slide_thumbnail) => getSlideThumbnail(data),
     get_cleared: () => getClearedState(),
 }
 
 /// RECEIVER / SENDER ///
 
 export async function triggerAction(data: API) {
+    // Open Sound Control format
+    if (data.action.startsWith("/")) data = oscToAPI(data)
+
     let id = data.action
 
     // API start at 1, code start at 0

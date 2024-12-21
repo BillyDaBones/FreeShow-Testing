@@ -9,6 +9,7 @@ import {
     activeDrawerTab,
     activeEdit,
     activeFocus,
+    activeMediaTagFilter,
     activePage,
     activePopup,
     activeRecording,
@@ -17,6 +18,7 @@ import {
     activeTagFilter,
     audioFolders,
     categories,
+    contextActive,
     currentOutputSettings,
     currentWindow,
     dataPath,
@@ -133,7 +135,7 @@ const actions: any = {
 
     // main
     rename: (obj: any) => {
-        let id = obj.sel.id || obj.contextElem.id
+        let id = obj.sel?.id || obj.contextElem?.id
         if (!id) return
         let data = obj.sel.data?.[0] || {}
 
@@ -170,6 +172,7 @@ const actions: any = {
         // "slide" || "group" || "overlay" || "template" || "output"
         activePopup.set("color")
     },
+    // not currently in use:
     remove_group: (obj: any) => removeGroup(obj.sel.data),
     remove_slide: (obj: any) => {
         removeSlide(obj.sel.data, "remove")
@@ -198,7 +201,8 @@ const actions: any = {
             deleteAction({ id: "video_marker", data: { index: obj.contextElem.id } })
             return
         }
-        if (obj.contextElem?.classList.value.includes("#edit_box")) {
+        // delete slide item using context menu, or menubar action
+        if (obj.contextElem?.classList.value.includes("#edit_box") || (!obj.sel?.id && get(activeEdit).slide !== undefined && get(activeEdit).items.length)) {
             deleteAction({ id: "item", data: { slide: get(activeEdit).slide } })
             return
         }
@@ -283,6 +287,44 @@ const actions: any = {
         else activeTags.splice(currentIndex, 1)
 
         activeTagFilter.set(activeTags || [])
+    },
+    media_tag_set: (obj: any) => {
+        let tagId = obj.menu.id
+        if (tagId === "create") {
+            contextActive.set(false)
+            popupData.set({ type: "media" })
+            activePopup.set("manage_tags")
+            return
+        }
+
+        let disable = get(media)[get(selected).data[0]?.path]?.tags?.includes(tagId)
+
+        obj.sel.data?.forEach(({ path }) => {
+            let tags = get(media)[path]?.tags || []
+
+            let existingIndex = tags.indexOf(tagId)
+            if (disable) {
+                if (existingIndex > -1) tags.splice(existingIndex, 1)
+            } else {
+                if (existingIndex < 0) tags.push(tagId)
+            }
+
+            media.update((a) => {
+                if (!a[path]) a[path] = {}
+                a[path].tags = tags
+                return a
+            })
+        })
+    },
+    media_tag_filter: (obj: any) => {
+        let tagId = obj.menu.id
+
+        let activeTags = get(activeMediaTagFilter)
+        let currentIndex = activeTags.indexOf(tagId)
+        if (currentIndex < 0) activeTags.push(tagId)
+        else activeTags.splice(currentIndex, 1)
+
+        activeMediaTagFilter.set(activeTags || [])
     },
     addToProject: (obj: any) => {
         if ((obj.sel.id !== "show" && obj.sel.id !== "show_drawer" && obj.sel.id !== "player" && obj.sel.id !== "media" && obj.sel.id !== "audio") || !get(activeProject)) return
@@ -582,9 +624,6 @@ const actions: any = {
     view_lyrics: () => {
         slidesOptions.set({ ...get(slidesOptions), mode: "lyrics" })
     },
-    view_text: () => {
-        slidesOptions.set({ ...get(slidesOptions), mode: "text" })
-    },
 
     // show
     slide_transition: (obj: any) => {
@@ -710,13 +749,18 @@ const actions: any = {
     slide_groups: (obj: any) => changeSlideGroups(obj),
 
     actions: (obj: any) => changeSlideAction(obj, obj.menu.id),
+    transition: () => {
+        // item transition
+        popupData.set({ action: "transition" })
+        activePopup.set("transition")
+    },
     item_actions: (obj: any) => {
         let action = obj.menu.id
         popupData.set({ action })
 
-        if (action === "transition") {
-            activePopup.set("transition")
-        } else if (action.includes("Timer")) {
+        // if (action === "transition") {
+        //     activePopup.set("transition")
+        if (action.includes("Timer")) {
             activePopup.set("set_time")
         }
     },

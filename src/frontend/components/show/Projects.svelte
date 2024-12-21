@@ -40,6 +40,11 @@
         if (sortType === "created") {
             sortedFolders = sortedFolders.sort((a, b) => (b.created || 0) - (a.created || 0))
             sortedProjects = sortedProjects.sort((a, b) => (b.created || 0) - (a.created || 0))
+        } else if (sortType === "modified") {
+            sortedProjects = sortedProjects.sort((a, b) => (b.modified || 0) - (a.modified || 0))
+        } else if (sortType === "name_des") {
+            sortedFolders = sortedFolders.reverse()
+            sortedProjects = sortedProjects.reverse()
         }
 
         tree = [...sortedFolders, ...sortedProjects]
@@ -217,6 +222,7 @@
                                     <Button
                                         active={$focusMode ? $activeFocus.id === show.id : $activeShow?.id === show.id}
                                         class="section context #project_section__project"
+                                        style={show.color ? `border-bottom: 2px solid ${show.color}` : ""}
                                         on:click={() => {
                                             if ($focusMode) activeFocus.set({ id: show.id, index })
                                             else activeShow.set({ ...show, index })

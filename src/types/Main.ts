@@ -3,6 +3,8 @@ export interface Option {
     extra?: string
     data?: any
     id?: string
+    icon?: string
+    style?: string // css style for the item
 }
 
 export interface NumberObject {
@@ -106,6 +108,7 @@ export interface MediaStyle {
     volume?: number // audio
     rendering?: string // image rendering
     info?: any // cached codec/mime data
+    tags?: string[] // media tags
 }
 
 export type Popups =
@@ -131,7 +134,6 @@ export type Popups =
     | "transition"
     | "import_scripture"
     | "edit_event"
-    | "edit_list"
     | "choose_chord"
     | "choose_screen"
     | "choose_camera"
@@ -142,6 +144,7 @@ export type Popups =
     | "animate"
     | "translate"
     | "next_timer"
+    | "manage_tags"
     | "advanced_settings"
     | "about"
     | "shortcuts"
@@ -151,6 +154,7 @@ export type Popups =
     | "history"
     | "action"
     | "category_action"
+    | "user_data_overwrite"
     | "connect"
     | "cloud_update"
     | "cloud_method"

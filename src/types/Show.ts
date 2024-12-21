@@ -170,6 +170,7 @@ export interface Line {
 }
 
 export interface List {
+    enabled?: boolean
     style?: string
     interval?: number
     items: ListItem[]
@@ -322,6 +323,7 @@ export interface TemplateSettings {
     backgroundPath?: string
     overlayId?: string
     firstSlideTemplate?: string
+    maxLinesPerSlide?: number
     actions?: any[]
 }
 
@@ -363,6 +365,11 @@ export interface OutTransition {
     // action: string
     // slide?: number
     duration: number
+}
+
+export interface Tag {
+    name: string
+    color: string
 }
 
 // types

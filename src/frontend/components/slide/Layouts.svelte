@@ -4,6 +4,7 @@
     import { activePopup, activeProject, activeShow, alertMessage, dictionary, labelsDisabled, notFound, openToolsTab, projects, showsCache, slidesOptions } from "../../stores"
     import Icon from "../helpers/Icon.svelte"
     import T from "../helpers/T.svelte"
+    import { keysToID, sortByName } from "../helpers/array"
     import { duplicate } from "../helpers/clipboard"
     import { history } from "../helpers/history"
     import { _show } from "../helpers/shows"
@@ -13,7 +14,6 @@
     import Center from "../system/Center.svelte"
     import SelectElem from "../system/SelectElem.svelte"
     import Reference from "./Reference.svelte"
-    import { keysToID, sortByName } from "../helpers/array"
 
     $: showId = $activeShow?.id || ""
     $: currentShow = $showsCache[showId] || {}
@@ -50,7 +50,7 @@
         history({ id: "UPDATE", newData: { key: "layouts", subkey: uid() }, oldData: { id: showId }, location: { page: "show", id: "show_layout" } })
     }
 
-    const slidesViews: any = { grid: "simple", simple: "list", list: "lyrics", lyrics: "text", text: "grid" }
+    const slidesViews: any = { grid: "simple", simple: "list", list: "lyrics", lyrics: "grid" }
 
     function changeName(e: any) {
         let currentLayout = e.detail?.id?.slice("layout_".length)
@@ -108,7 +108,9 @@
     {#if layouts?.[activeLayout]?.notes}
         <div class="notes" title={$dictionary.tools?.notes} on:click={() => openTab("notes")}>
             <Icon id="notes" right white />
-            <p>{@html layouts[activeLayout].notes.replaceAll("\n", "&nbsp;")}</p>
+            {#if typeof layouts[activeLayout].notes === "string"}
+                <p>{@html layouts[activeLayout].notes.replaceAll("\n", "&nbsp;")}</p>
+            {/if}
         </div>
     {:else if currentShow.message?.text}
         <div class="notes" title={$dictionary.meta?.message} on:click={() => openTab("metadata")}>
@@ -158,7 +160,7 @@
             {/if}
         </span>
     {:else}
-        <Center faded>
+        <Center faded size={0.8}>
             {#if loading}
                 <T id="remote.loading" />
             {:else}
@@ -197,6 +199,8 @@
                 <Icon size={1.1} id="clock" white={totalTime === "0s"} />
             </Button>
         {/if}
+
+        <div class="seperator" />
 
         <Button class="context #slideViews" on:click={() => slidesOptions.set({ ...$slidesOptions, mode: slidesViews[$slidesOptions.mode] })} title={$dictionary.show?.[$slidesOptions.mode]}>
             <Icon size={1.3} id={$slidesOptions.mode} white />
@@ -260,7 +264,7 @@
     }
 
     .seperator {
-        width: 2px;
+        width: 1px;
         height: 100%;
         background-color: var(--primary);
         /* margin: 0 10px; */

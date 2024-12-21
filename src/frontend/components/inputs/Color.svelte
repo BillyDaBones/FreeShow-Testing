@@ -11,6 +11,7 @@
     export let enableNoColor: boolean = false
     export let showDisabled: boolean = false
     export let custom: boolean = false
+    export let rightAlign: boolean = false
     export let height: number = 0
     export let width: number = 0
 
@@ -43,7 +44,7 @@
     }
 
     let colorElem
-    let clipRight: boolean = false
+    let clipRight: boolean = rightAlign || false
     $: if (colorElem) {
         let pickerRect = colorElem.getBoundingClientRect()
         let pickerRight = pickerRect.left + 200
@@ -129,11 +130,17 @@
         transition: background-color 0.2s;
         position: relative;
         border-radius: var(--border-radius);
+
+        /* transition: outline-width 0.1s; */
     }
     /* filter: brightness(0.98); */
     /* .color:not(.picker):hover {
         opacity: 0.98;
     } */
+    .color:hover {
+        outline: 2px solid #ddd !important;
+        outline-offset: -2px;
+    }
 
     input[type="color"] {
         opacity: 0;

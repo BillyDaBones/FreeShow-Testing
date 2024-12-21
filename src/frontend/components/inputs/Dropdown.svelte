@@ -17,6 +17,7 @@
     export let activeId: string = ""
     export let title: string = ""
     export let flags: boolean = false
+    export let up: boolean = false
     let normalizedValue: any = value
     $: (normalizedValue = value || options[0]?.name || "—"), $language
 
@@ -24,7 +25,7 @@
 
     let nextScrollTimeout: any = null
     function wheel(e: any) {
-        if (disabled || nextScrollTimeout) return
+        if (disabled || arrow || nextScrollTimeout) return
         e.preventDefault()
 
         let index = options.findIndex((a) => (activeId ? a.id === activeId : a.name === value))
@@ -66,7 +67,7 @@
 <svelte:window on:mousedown={mousedown} />
 
 <div class:disabled class:center class:flags bind:this={self} class="dropdownElem {$$props.class || ''}" style="position: relative;{$$props.style || ''}">
-    <button {id} {title} on:click={() => (disabled ? null : (active = !active))} on:wheel={wheel}>
+    <button style={arrow ? "justify-content: center;" : ""} {id} {title} on:click={() => (disabled ? null : (active = !active))} on:wheel={wheel}>
         {#if arrow}
             <Icon id="expand" size={1.2} white />
         {:else}
@@ -74,10 +75,11 @@
         {/if}
     </button>
     {#if active}
-        <div class="dropdown" class:arrow style={$$props.style || ""} transition:slide={{ duration: 200 }}>
+        <div class="dropdown" class:up class:arrow style={$$props.style || ""} transition:slide={{ duration: 200 }}>
             {#each options as option}
                 <span
                     id={formatId(option.name)}
+                    style={option.style || ""}
                     on:click={() => {
                         if (disabled) return
                         active = false
@@ -138,6 +140,13 @@
         transform: translateY(-1px);
         /* transform: translateX(-25%); */
         z-index: 10;
+    }
+
+    .dropdown.up {
+        top: 0;
+        left: 0;
+        position: absolute;
+        transform: translateY(-100%);
     }
 
     .dropdown.arrow {

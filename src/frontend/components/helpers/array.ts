@@ -85,7 +85,7 @@ export function sortByNameAndNumber(array: any[]) {
 
         // get only number part if available
         const extractNumber = (str) => {
-            const match = str.match(/\d+/)
+            const match = str.toString().match(/\d+/)
             return match ? parseInt(match[0], 10) : Infinity
         }
         const quickAccessNumberA = extractNumber(a.quickAccess?.number || "")
@@ -110,7 +110,7 @@ export function sortByNameAndNumber(array: any[]) {
 export function sortFilenames(filenames) {
     return filenames.sort(({ name: a }, { name: b }) => {
         // extract name, number, and extension
-        const regex = /^(.*?)(?:_(\d+))?(\.\w+)?$/
+        const regex = /^(.*?)(\d+)?(\.\w+)?$/
 
         // extract parts
         const [_, nameA, numA, extA] = a.match(regex) || [a, a, null, null]

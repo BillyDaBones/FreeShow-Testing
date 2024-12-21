@@ -269,9 +269,17 @@ export const dropActions: any = {
     },
     overlays: ({ drag, drop }: any) => dropActions.templates({ drag, drop }),
     edit: ({ drag }: any) => {
-        if (drag.id !== "media" && drag.id !== "files") return
-
-        drag.data.forEach((file: any) => addItem("media", null, { src: file.path || window.api.showFilePath(file) }))
+        if (drag.id === "media" || drag.id === "files") {
+            drag.data.forEach((file: any) => addItem("media", null, { src: file.path || window.api.showFilePath(file) }))
+        } else if (drag.id === "global_timer") {
+            drag.data.forEach((a: any) => addItem("timer", null, { timer: { id: a.id } }))
+        } else if (drag.id === "variable") {
+            drag.data.forEach((a: any) => {
+                // showActions.ts getNameId()
+                let name = a.name?.toLowerCase().trim().replaceAll(" ", "_") || ""
+                addItem("text", null, {}, `{variable_${name}}`)
+            })
+        }
     },
     audio_playlist: ({ drag, drop }: any, h: any) => {
         h.id = "UPDATE"
@@ -745,8 +753,10 @@ function createScriptureShow(drag, drop) {
     })
 
     let layoutID = uid()
+    // only set template if not combined (because it might be a custom reference style on first line)
+    let template = get(scriptureSettings).combineWithText ? false : get(scriptureSettings).template || false
     // this can be set to private - to only add to project and not in drawer, because it's mostly not used again
-    let show: Show = new ShowObj(false, "scripture", layoutID, new Date().getTime(), get(scriptureSettings).template || false)
+    let show: Show = new ShowObj(false, "scripture", layoutID, new Date().getTime(), template)
     // add scripture category
     if (!get(categories).scripture) {
         categories.update((a) => {

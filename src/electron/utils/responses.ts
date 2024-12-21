@@ -1,19 +1,19 @@
 // ----- FreeShow -----
 // Respond to messages from the frontend
 
+import getFonts from "css-fonts"
 import { app, BrowserWindow, desktopCapturer, DesktopCapturerSource, Display, screen, shell, systemPreferences } from "electron"
-import { getFonts } from "font-list"
 import { machineIdSync } from "node-machine-id"
 import os from "os"
 import path from "path"
-import { closeMain, isProd, mainWindow, maximizeMain, setGlobalMenu, toApp } from ".."
+import { closeMain, exitApp, isProd, mainWindow, maximizeMain, setGlobalMenu, toApp } from ".."
 import { BIBLE, MAIN, SHOW } from "../../types/Channels"
 import { restoreFiles } from "../data/backup"
 import { downloadMedia } from "../data/downloadMedia"
 import { importShow } from "../data/import"
 import { convertPDFToImages } from "../data/pdfToImage"
 import { config, error_log, stores } from "../data/store"
-import { getThumbnail, getThumbnailFolderPath, saveImage } from "../data/thumbnails"
+import { captureSlide, getThumbnail, getThumbnailFolderPath, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers } from "../servers"
@@ -23,6 +23,7 @@ import {
     bundleMediaFiles,
     checkShowsFolder,
     dataFolderNames,
+    doesPathExist,
     getDataFolder,
     getDocumentsFolder,
     getFileInfo,
@@ -127,6 +128,7 @@ const mainResponses: any = {
     MEDIA_CODEC: (data: any) => getMediaCodec(data),
     DOWNLOAD_MEDIA: (data: any) => downloadMedia(data),
     MEDIA_BASE64: (data: any) => storeMedia(data),
+    CAPTURE_SLIDE: (data: any) => captureSlide(data),
     PDF_TO_IMAGE: (data: any) => convertPDFToImages(data),
     ACCESS_CAMERA_PERMISSION: () => getPermission("camera"),
     ACCESS_MICROPHONE_PERMISSION: () => getPermission("microphone"),
@@ -162,6 +164,19 @@ const mainResponses: any = {
     // FILES
     RESTORE: (data: any) => restoreFiles(data),
     SYSTEM_OPEN: (data: any) => openSystemFolder(data),
+    DOES_PATH_EXIST: (data: any) => {
+        let p = data.path
+        if (p === "data_config") p = path.join(data.dataPath, dataFolderNames.userData)
+        return { ...data, exists: doesPathExist(p) }
+    },
+    UPDATE_DATA_PATH: () => {
+        // updateDataPath({ ...data, load: true })
+        let special = stores.SETTINGS.get("special")
+        special.customUserDataLocation = true
+        stores.SETTINGS.set("special", special)
+
+        forceCloseApp()
+    },
     LOCATE_MEDIA_FILE: (data: any) => locateMediaFile(data),
     GET_SIMULAR: (data: any) => getSimularPaths(data),
     BUNDLE_MEDIA_FILES: (data: any) => bundleMediaFiles(data),
@@ -188,9 +203,11 @@ export const openURL = (url: string) => {
 
 // GET_SYSTEM_FONTS
 function loadFonts(data: any) {
-    getFonts({ disableQuoting: true })
-        .then((fonts: string[]) => toApp(MAIN, { channel: "GET_SYSTEM_FONTS", data: { ...data, fonts } }))
-        .catch((err: any) => console.log(err))
+    loadFontsAsync(data)
+}
+async function loadFontsAsync(data: any) {
+    const fonts = await getFonts()
+    toApp(MAIN, { channel: "GET_SYSTEM_FONTS", data: { ...data, fonts } })
 }
 
 // SEARCH_LYRICS
@@ -238,6 +255,12 @@ function getScreens(type: "window" | "screen" = "screen") {
 
         return screens
     }
+}
+
+export function forceCloseApp() {
+    toApp(MAIN, { channel: "ALERT", data: "actions.closing" })
+    // let user read message and action finish
+    setTimeout(exitApp, 2000)
 }
 
 // RECORDER

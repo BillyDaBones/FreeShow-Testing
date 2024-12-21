@@ -37,7 +37,7 @@
 
         // auto revert special values
         if (autoRevert.includes(key) && value && !reverted.includes(key)) {
-            newToast($dictionary.toast?.reverting_setting?.replace("{}", revertTime.toString()))
+            newToast($dictionary.toast?.reverting_setting?.replace("{}", revertTime.toString()) || "")
             reverted.push(key)
             setTimeout(() => {
                 updateOutput(key, false, outputId)
@@ -45,7 +45,9 @@
             }, revertTime * 1000)
         }
 
-        if (key === "blackmagic") {
+        if (key === "ndi") {
+            if (value) newToast("$toast.output_capture_enabled")
+        } else if (key === "blackmagic") {
             if (value === true) {
                 // send(BLACKMAGIC, ["GET_DEVICES"])
                 updateOutput("transparent", true)
@@ -348,7 +350,7 @@
         <p>
             <T id="popup.choose_screen" />
             {#if currentOutput.bounds?.width}
-                <span style="display: flex;align-items: center;padding: 0 8px;opacity: 0.5;">({currentOutput.bounds.width}x{currentOutput.bounds.height})</span>
+                <span style="display: flex;align-items: center;padding: 0 8px;opacity: 0.5;font-size: 0.9em;">({currentOutput.bounds.width}x{currentOutput.bounds.height})</span>
             {/if}
         </p>
     </Button>

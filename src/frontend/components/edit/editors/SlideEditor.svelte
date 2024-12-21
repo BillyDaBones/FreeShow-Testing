@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
     import { slide } from "svelte/transition"
     import type { MediaStyle } from "../../../../types/Main"
-    import { activeEdit, activePopup, activeShow, alertMessage, dictionary, driveData, focusMode, labelsDisabled, media, outputs, overlays, refreshEditSlide, showsCache, styles } from "../../../stores"
+    import { activeEdit, activePopup, activeShow, alertMessage, dictionary, driveData, focusMode, labelsDisabled, media, outputs, overlays, refreshEditSlide, showsCache, styles, textEditActive } from "../../../stores"
     import { slideHasAction } from "../../actions/actions"
     import MediaLoader from "../../drawer/media/MediaLoader.svelte"
     import Icon from "../../helpers/Icon.svelte"
@@ -332,9 +332,18 @@
 
             <div class="actions" style="height: 100%;justify-content: right;">
                 <Button class={chordsMode ? "chordsActive" : ""} on:click={toggleChords} title={$dictionary.edit?.chords}>
-                    <Icon id="chords" white={!usedChords.length} right={!$labelsDisabled} />
+                    <Icon id="chords" white={!slideChords.length} right={!$labelsDisabled} />
                     {#if !$labelsDisabled}<T id="edit.chords" />{/if}
                 </Button>
+
+                {#if !$focusMode}
+                    <div class="seperator" />
+
+                    <Button on:click={() => textEditActive.set(true)}>
+                        <Icon id="text" right={!$labelsDisabled} />
+                        {#if !$labelsDisabled}<p><T id="show.text" /></p>{/if}
+                    </Button>
+                {/if}
 
                 <div class="seperator" />
 
@@ -431,7 +440,7 @@
     }
 
     .seperator {
-        width: 2px;
+        width: 1px;
         height: 100%;
         background-color: var(--primary);
         /* margin: 0 10px; */
