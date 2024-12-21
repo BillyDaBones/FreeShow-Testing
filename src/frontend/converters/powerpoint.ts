@@ -42,6 +42,7 @@ export function convertPowerpoint(files: any[]) {
                     created: new Date(meta["dcterms:created"]?.[0]?._ || 0).getTime(),
                     modified: new Date(meta["dcterms:modified"]?.[0]?._ || 0).getTime(),
                     used: null,
+                    chronicle: null,
                 }
             }
 
@@ -94,7 +95,7 @@ function createSlides(slides: string[][][]) {
         slide.forEach((textbox) => {
             let lines: any[] = []
             textbox.forEach((line) => {
-                lines.push({ align: "text-align: left;", text: [{ style: "", value: line }] })
+                lines.push({ align: "text-align: center;", text: [{ style: "", value: line }] })
             })
 
             items.push({ style: "left:50px;top:120px;width:1820px;height:840px;", lines })

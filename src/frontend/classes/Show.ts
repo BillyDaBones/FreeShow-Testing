@@ -43,6 +43,7 @@ export class ShowObj implements Show {
             created,
             modified: null,
             used: null,
+            chronicle: null,
         }
         this.quickAccess = {}
         this.meta = {}

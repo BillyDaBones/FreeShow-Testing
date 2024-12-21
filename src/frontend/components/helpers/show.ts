@@ -138,6 +138,8 @@ export function updateShowsList(shows: Shows) {
         sortedShows = showsList.sort((a, b) => (b.timestamps?.modified || b.timestamps?.created) - (a.timestamps?.modified || a.timestamps?.created))
     } else if (sortType === "used") {
         sortedShows = showsList.sort((a, b) => (b.timestamps?.used || b.timestamps?.created) - (a.timestamps?.used || a.timestamps?.created))
+    } else if (sortType === "chronicle") {
+        sortedShows = showsList.sort((a, b) => (b.timestamps?.chronicle || b.timestamps?.created) - (a.timestamps?.chronicle || a.timestamps?.created))
     } else {
         // sort by name
         sortedShows = sortByNameAndNumber(showsList)

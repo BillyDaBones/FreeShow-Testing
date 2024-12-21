@@ -24,6 +24,7 @@ export interface Show {
         created: number
         modified: null | number
         used: null | number
+        chronicle: null | number
     }
     message?: {
         text: string

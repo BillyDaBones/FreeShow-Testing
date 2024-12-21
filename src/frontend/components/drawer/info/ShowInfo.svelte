@@ -13,6 +13,7 @@
     $: created = show?.timestamps?.created || null
     $: modified = show?.timestamps?.modified || null
     $: used = show?.timestamps?.used || null
+    $: chronicle = show?.timestamps?.chronicle || null
 
     let words: number = 0
     let allLines: any[]
@@ -45,6 +46,14 @@
             <span class="title"><T id={"info.created"} /></span>
             {#if created}
                 <span><Date d={created} /></span>
+            {:else}
+                <span>—</span>
+            {/if}
+        </p>
+        <p>
+            <span class="title"><T id={"info.chronicle"} /></span>
+            {#if chronicle}
+                <span>#{chronicle}</span>   
             {:else}
                 <span>—</span>
             {/if}

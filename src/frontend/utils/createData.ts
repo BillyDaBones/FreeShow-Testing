@@ -604,6 +604,7 @@ export function createDefaultShow() {
             created: new Date().getTime(), // new Date("2022-01-01").getTime(),
             modified: null,
             used: null,
+            chronicle: null,
         },
         quickAccess: {},
         meta: {},

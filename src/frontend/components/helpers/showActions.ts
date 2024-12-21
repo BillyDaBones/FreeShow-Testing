@@ -44,6 +44,7 @@ import { initializeMetadata } from "./show"
 import { _show } from "./shows"
 import { addZero, joinTime, secondsToTime } from "./time"
 import { stopTimers } from "./timerTick"
+import { chronicleShow } from "./chronicleShow"
 
 const getProjectIndex: any = {
     next: (index: number | null, shows: any) => {
@@ -518,6 +519,9 @@ export function updateOut(showId: string, index: number, layout: any, extra: boo
     if (get(activePage) !== "edit") activeEdit.set({ slide: index, items: [] })
 
     _show(showId).set({ key: "timestamps.used", value: new Date().getTime() })
+
+    //use helper chronicleShow to assign a 3 digit indexing
+    _show(showId).set({ key: "timestamps.chronicle", value: chronicleShow(new Date().getTime()) })
     if (!layout) return
     let data = layout[index]?.data
 
